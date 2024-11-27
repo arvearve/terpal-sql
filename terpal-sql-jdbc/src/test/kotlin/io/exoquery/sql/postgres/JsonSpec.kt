@@ -17,6 +17,9 @@ object JsonSpecData {
 
     @Serializable
     data class Example(val id: Int, val value: MyPersonJson)
+
+    @Serializable
+    data class NullableExample(val id: Int, @SqlJsonValue val value: MyPersonJson?)
   }
 }
 
@@ -80,6 +83,12 @@ class JsonSpec: FreeSpec({
       Sql("""INSERT INTO JsonbExample (id, value) VALUES (1, '{"name":"Joe", "age":123}')""").action().runOn(ctx)
       val customers = Sql("SELECT id, value FROM JsonbExample").queryOf<JsonSpecData.A.Example>().runOn(ctx)
       customers shouldBe listOf(je)
+    }
+
+    "json null value" {
+      Sql("""INSERT INTO JsonbExample (id, value) VALUES (1, 'null')""").action().runOn(ctx)
+      val customers = Sql("SELECT id, value FROM JsonbExample").queryOf<JsonSpecData.A.NullableExample>().runOn(ctx)
+      customers.single().value shouldBe null
     }
   }
 
